@@ -1,9 +1,11 @@
 """Unit tests for Jellyfin Sensor entity."""
+
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock
+from homeassistant.const import STATE_OFF, STATE_ON
 
 from custom_components.jellyfin_custom.sensor import JellyfinSensor
-from homeassistant.const import STATE_ON, STATE_OFF
 
 
 def test_sensor_properties_and_safe_fallbacks():

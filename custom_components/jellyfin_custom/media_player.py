@@ -60,10 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry, async_add_entitie
         """Handle devices which are added or updated in Jellyfin."""
         new_devices = []
         for dev_id in manager.devices:
-            if (
-                dev_id not in active_jellyfin_devices
-                and dev_id not in inactive_jellyfin_devices
-            ):
+            if dev_id not in active_jellyfin_devices and dev_id not in inactive_jellyfin_devices:
                 new_player = JellyfinMediaPlayer(manager, dev_id)
                 active_jellyfin_devices[dev_id] = new_player
                 new_devices.append(new_player)
@@ -106,9 +103,7 @@ class JellyfinMediaPlayer(MediaPlayerEntity):
         self.device_id = device_id
 
         # Keep initial reference or dummy
-        self._fallback_device = self.jelly_cm.devices.get(device_id) or JellyfinDevice(
-            {}, jelly_cm
-        )
+        self._fallback_device = self.jelly_cm.devices.get(device_id) or JellyfinDevice({}, jelly_cm)
         self._available = True
         self.media_status_last_position = None
         self.media_status_received = None
@@ -166,12 +161,8 @@ class JellyfinMediaPlayer(MediaPlayerEntity):
 
     async def async_browse_media(self, media_content_type=None, media_content_id=None):
         """Implement media browser for this player."""
-        _LOGGER.debug(
-            "async_browse_media: %s / %s", media_content_type, media_content_id
-        )
-        return await async_library_items(
-            self.jelly_cm, media_content_type, media_content_id
-        )
+        _LOGGER.debug("async_browse_media: %s / %s", media_content_type, media_content_id)
+        return await async_library_items(self.jelly_cm, media_content_type, media_content_id)
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -213,9 +204,7 @@ class JellyfinMediaPlayer(MediaPlayerEntity):
     @property
     def name(self) -> str:
         """Return the name of the device."""
-        return (
-            f"Jellyfin {self.device.name}" if self.device.name else DEVICE_DEFAULT_NAME
-        )
+        return f"Jellyfin {self.device.name}" if self.device.name else DEVICE_DEFAULT_NAME
 
     @property
     def should_poll(self) -> bool:

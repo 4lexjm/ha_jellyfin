@@ -144,9 +144,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     autolog("<<<")
 
     if not config_entry.unique_id:
-        hass.config_entries.async_update_entry(
-            config_entry, unique_id=config_entry.title
-        )
+        hass.config_entries.async_update_entry(config_entry, unique_id=config_entry.title)
 
     # Merge data and options without wiping options
     config = {**config_entry.data, **config_entry.options}
@@ -180,9 +178,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
         if not method:
             return
 
-        params = {
-            key: value for key, value in service.data.items() if key != ATTR_ENTITY_ID
-        }
+        params = {key: value for key, value in service.data.items() if key != ATTR_ENTITY_ID}
 
         # Normalize search_term vs id for search service
         if (
@@ -212,9 +208,7 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     for my_service, srv_info in SERVICE_TO_METHOD.items():
         schema = srv_info.get("schema", SERVICE_SCHEMA)
         if not hass.services.has_service(DOMAIN, my_service):
-            hass.services.async_register(
-                DOMAIN, my_service, async_service_handler, schema=schema
-            )
+            hass.services.async_register(DOMAIN, my_service, async_service_handler, schema=schema)
 
     await _jelly.start()
 
@@ -242,9 +236,7 @@ async def async_unload_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Unload a Jellyfin config entry."""
     _LOGGER.info("Unloading jellyfin entry: %s", config_entry.entry_id)
 
-    unload_ok = await hass.config_entries.async_unload_platforms(
-        config_entry, PLATFORMS
-    )
+    unload_ok = await hass.config_entries.async_unload_platforms(config_entry, PLATFORMS)
 
     url_key = config_entry.data.get(CONF_URL)
     manager = None
@@ -324,11 +316,7 @@ class JellyfinDevice:
     @property
     def name(self):
         """Return device name."""
-        return (
-            self.session.get("DeviceName")
-            or self.session.get("Client")
-            or "Jellyfin Client"
-        )
+        return self.session.get("DeviceName") or self.session.get("Client") or "Jellyfin Client"
 
     @property
     def client(self):
@@ -371,9 +359,7 @@ class JellyfinDevice:
         now_playing = self.session.get("NowPlayingItem") or {}
         artists = now_playing.get("Artists")
         if isinstance(artists, list) and artists:
-            return (
-                artists[0] if len(artists) == 1 else ", ".join(str(a) for a in artists)
-            )
+            return artists[0] if len(artists) == 1 else ", ".join(str(a) for a in artists)
         return artists
 
     @property
@@ -462,9 +448,7 @@ class JellyfinDevice:
     async def get_items(self, query=None):
         return await self.jf_manager.get_items(query)
 
-    async def get_artwork(
-        self, media_id, type="Primary"
-    ) -> tuple[bytes | None, str | None]:
+    async def get_artwork(self, media_id, type="Primary") -> tuple[bytes | None, str | None]:
         return await self.jf_manager.get_artwork(media_id, type)
 
     def get_artwork_url(self, media_id, type="Primary") -> str:
@@ -521,9 +505,7 @@ class JellyfinDevice:
 class JellyfinClientManager:
     """Manages the connection, data synchronization, and WebSocket with Jellyfin."""
 
-    def __init__(
-        self, hass: HomeAssistant, config: dict, config_entry: ConfigEntry = None
-    ):
+    def __init__(self, hass: HomeAssistant, config: dict, config_entry: ConfigEntry = None):
         self.hass = hass
         self.callback = lambda client, event_name, data: None
         self.jf_client: JellyfinClient = None
@@ -660,14 +642,10 @@ class JellyfinClientManager:
         autolog(">>>")
         success, reason = await self.hass.async_add_executor_job(self.login)
         if success:
-            _LOGGER.info(
-                "Successfully connected to Jellyfin server: %s", self.server_url
-            )
+            _LOGGER.info("Successfully connected to Jellyfin server: %s", self.server_url)
             self.is_available = True
         elif reason == "invalid_auth":
-            raise ConfigEntryAuthFailed(
-                "Invalid username or password for Jellyfin server."
-            )
+            raise ConfigEntryAuthFailed("Invalid username or password for Jellyfin server.")
         else:
             raise ConfigEntryNotReady(f"Cannot connect to Jellyfin server: {reason}")
 
@@ -683,9 +661,7 @@ class JellyfinClientManager:
                 try:
                     self.jf_client.wsc.send("SessionsStart", "0,1500")
                 except Exception as err:
-                    _LOGGER.warning(
-                        "Could not send SessionsStart on WebSocket connect: %s", err
-                    )
+                    _LOGGER.warning("Could not send SessionsStart on WebSocket connect: %s", err)
             elif event_name == "WebSocketDisconnect":
                 self.is_available = False
                 self._event_loop.call_soon_threadsafe(self.mark_devices_offline)
@@ -697,9 +673,7 @@ class JellyfinClientManager:
                 try:
                     cleaned = self.clean_none_dict_values(data)
                     self._sessions = (
-                        cleaned.get("value", [])
-                        if isinstance(cleaned, dict)
-                        else (cleaned or [])
+                        cleaned.get("value", []) if isinstance(cleaned, dict) else (cleaned or [])
                     )
                     self.update_device_list()
                 except Exception as err:
@@ -720,9 +694,7 @@ class JellyfinClientManager:
                 self.jf_client.jellyfin.get_sessions
             )
             cleaned_sessions = self.clean_none_dict_values(raw_sessions)
-            self._sessions = (
-                cleaned_sessions if isinstance(cleaned_sessions, list) else []
-            )
+            self._sessions = cleaned_sessions if isinstance(cleaned_sessions, list) else []
             await self.update_data()
         except Exception as err:
             _LOGGER.warning("Error fetching initial server info or sessions: %s", err)
@@ -747,9 +719,7 @@ class JellyfinClientManager:
         timeout_gen = self.expo(100)
         while not self.is_stopping and not self.is_available:
             timeout = next(timeout_gen)
-            _LOGGER.warning(
-                "Connection to Jellyfin lost. Retrying in %d seconds...", timeout
-            )
+            _LOGGER.warning("Connection to Jellyfin lost. Retrying in %d seconds...", timeout)
             try:
                 await asyncio.sleep(timeout)
             except asyncio.CancelledError:
@@ -804,9 +774,7 @@ class JellyfinClientManager:
                 _LOGGER.debug("Error while stopping Jellyfin client: %s", err)
 
     @staticmethod
-    def _parse_and_format_date(
-        date_str: str | None, fmt: str = "%d/%m/%Y"
-    ) -> str | None:
+    def _parse_and_format_date(date_str: str | None, fmt: str = "%d/%m/%Y") -> str | None:
         """Parse ISO date and format safely without external dependencies."""
         if not date_str:
             return None
@@ -875,9 +843,7 @@ class JellyfinClientManager:
 
             for item in self._yamc.get("Items", []):
                 try:
-                    stream_info = await self.get_stream_url(
-                        item["Id"], item.get("Type")
-                    )
+                    stream_info = await self.get_stream_url(item["Id"], item.get("Type"))
                     item["stream_url"] = stream_info[0]
                     item["info"] = stream_info[2]
                 except Exception as err:
@@ -914,9 +880,7 @@ class JellyfinClientManager:
                     continue
 
                 if dev_name not in self._devices:
-                    _LOGGER.debug(
-                        "New Jellyfin Device: %s. Adding to device list.", dev_name
-                    )
+                    _LOGGER.debug("New Jellyfin Device: %s. Adding to device list.", dev_name)
                     new = JellyfinDevice(device, self)
                     self._devices[dev_name] = new
                     new_devices.append(new)
@@ -943,17 +907,13 @@ class JellyfinClientManager:
             if new_devices:
                 self._do_new_devices_callback(0)
         except Exception:
-            _LOGGER.critical(
-                "Exception in update_device_list: %s", traceback.format_exc()
-            )
+            _LOGGER.critical("Exception in update_device_list: %s", traceback.format_exc())
 
     def update_check(self, existing: JellyfinDevice, new: dict) -> bool:
         """Check device state transition to decide if update callback is needed."""
         autolog(">>>")
         old_state = existing.state
-        old_theme = existing.session_raw.get("NowPlayingItem", {}).get(
-            "IsThemeMedia", False
-        )
+        old_theme = existing.session_raw.get("NowPlayingItem", {}).get("IsThemeMedia", False)
 
         now_playing = new.get("NowPlayingItem")
         if now_playing:
@@ -1017,9 +977,7 @@ class JellyfinClientManager:
                         "studio": ",".join(
                             o.get("Name", "") for o in studios if isinstance(o, dict)
                         ),
-                        "release": self._parse_and_format_date(
-                            item.get("PremiereDate")
-                        ),
+                        "release": self._parse_and_format_date(item.get("PremiereDate")),
                         "poster": self.get_artwork_url(item.get("Id")),
                         "fanart": self.get_artwork_url(item.get("Id"), "Backdrop"),
                         "genres": ",".join(genres),
@@ -1091,13 +1049,9 @@ class JellyfinClientManager:
                             "airdate": item.get("DateCreated"),
                             "runtime": runtime,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("PremiereDate"), "%Y"
-                            ),
+                            "release": self._parse_and_format_date(item.get("PremiereDate"), "%Y"),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Backdrop"),
                             "genres": ",".join(genres),
@@ -1124,13 +1078,9 @@ class JellyfinClientManager:
                             "number": f"S{item.get('ParentIndexNumber', 0)}E{item.get('IndexNumber', 0)}",
                             "runtime": runtime,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("PremiereDate")
-                            ),
+                            "release": self._parse_and_format_date(item.get("PremiereDate")),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Backdrop"),
                             "genres": ",".join(genres),
@@ -1156,13 +1106,9 @@ class JellyfinClientManager:
                             "number": f"S{item.get('ParentIndexNumber', 0)}E{item.get('IndexNumber', 0)}",
                             "runtime": runtime,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("PremiereDate")
-                            ),
+                            "release": self._parse_and_format_date(item.get("PremiereDate")),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Primary"),
                             "genres": ",".join(genres),
@@ -1188,22 +1134,16 @@ class JellyfinClientManager:
                             "airdate": item.get("DateCreated"),
                             "runtime": runtime,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("PremiereDate"), "%Y"
-                            ),
+                            "release": self._parse_and_format_date(item.get("PremiereDate"), "%Y"),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Primary"),
                             "genres": ",".join(genres),
                             "progress": 0,
                             "rating": rating,
                             "stream_url": item.get("stream_url"),
-                            "info_url": f"https://musicbrainz.org/album/{provid}"
-                            if provid
-                            else "",
+                            "info_url": f"https://musicbrainz.org/album/{provid}" if provid else "",
                         }
                     )
                 elif item_type == "MusicArtist":
@@ -1219,13 +1159,9 @@ class JellyfinClientManager:
                             "airdate": item.get("DateCreated"),
                             "runtime": None,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("DateCreated"), "%Y"
-                            ),
+                            "release": self._parse_and_format_date(item.get("DateCreated"), "%Y"),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Primary"),
                             "genres": ",".join(genres),
@@ -1249,13 +1185,9 @@ class JellyfinClientManager:
                             "airdate": item.get("DateCreated"),
                             "runtime": runtime,
                             "studio": ",".join(
-                                o.get("Name", "")
-                                for o in studios
-                                if isinstance(o, dict)
+                                o.get("Name", "") for o in studios if isinstance(o, dict)
                             ),
-                            "release": self._parse_and_format_date(
-                                item.get("PremiereDate")
-                            ),
+                            "release": self._parse_and_format_date(item.get("PremiereDate")),
                             "poster": self.get_artwork_url(item.get("Id")),
                             "fanart": self.get_artwork_url(item.get("Id"), "Primary"),
                             "genres": ",".join(genres),
@@ -1282,15 +1214,11 @@ class JellyfinClientManager:
 
     async def trigger_scan(self):
         """Trigger library refresh on Jellyfin."""
-        await self.hass.async_add_executor_job(
-            self.jf_client.jellyfin._post, "Library/Refresh"
-        )
+        await self.hass.async_add_executor_job(self.jf_client.jellyfin._post, "Library/Refresh")
 
     async def delete_item(self, id):
         """Delete an item from Jellyfin."""
-        await self.hass.async_add_executor_job(
-            self.jf_client.jellyfin.items, f"/{id}", "DELETE"
-        )
+        await self.hass.async_add_executor_job(self.jf_client.jellyfin.items, f"/{id}", "DELETE")
         await self.update_data()
 
     async def search_item(self, search_term):
@@ -1319,9 +1247,7 @@ class JellyfinClientManager:
         return self.jf_client.config.data.get("auth.token", "")
 
     async def get_item(self, id):
-        return await self.hass.async_add_executor_job(
-            self.jf_client.jellyfin.get_item, id
-        )
+        return await self.hass.async_add_executor_job(self.jf_client.jellyfin.get_item, id)
 
     async def get_items(self, query=None):
         response = await self.hass.async_add_executor_job(
@@ -1343,9 +1269,7 @@ class JellyfinClientManager:
         )
 
     async def view_media(self, session_id, media_id):
-        item = await self.hass.async_add_executor_job(
-            self.jf_client.jellyfin.get_item, media_id
-        )
+        item = await self.hass.async_add_executor_job(self.jf_client.jellyfin.get_item, media_id)
         params = {
             "itemId": media_id,
             "itemType": item.get("Type"),
@@ -1355,9 +1279,7 @@ class JellyfinClientManager:
             self.jf_client.jellyfin.post_session, session_id, "Viewing", params
         )
 
-    async def get_artwork(
-        self, media_id, type="Primary"
-    ) -> tuple[bytes | None, str | None]:
+    async def get_artwork(self, media_id, type="Primary") -> tuple[bytes | None, str | None]:
         """Retrieve artwork binary image content and its MIME content type asynchronously."""
         url = self.get_artwork_url(media_id, type)
         if not url:
@@ -1486,9 +1408,7 @@ class JellyfinClientManager:
             transcoding_url = selected.get("TranscodingUrl", "")
             sep = "&" if "?" in transcoding_url else "?"
             url = f"{self.get_server_url()}{transcoding_url}{sep}{auth_param}"
-            container = selected.get("TranscodingContainer") or selected.get(
-                "Container", "mp4"
-            )
+            container = selected.get("TranscodingContainer") or selected.get("Container", "mp4")
             if media_content_type in ("Audio", "track"):
                 mimetype = "audio/" + container
             else:

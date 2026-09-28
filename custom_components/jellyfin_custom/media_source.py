@@ -116,11 +116,7 @@ class JellyfinSource(MediaSource):
                 self.jelly_cm = entry.runtime_data
             else:
                 url_key = entry.data.get(CONF_URL)
-                if (
-                    url_key
-                    and DOMAIN in self.hass.data
-                    and url_key in self.hass.data[DOMAIN]
-                ):
+                if url_key and DOMAIN in self.hass.data and url_key in self.hass.data[DOMAIN]:
                     self.jelly_cm = self.hass.data[DOMAIN][url_key].get("manager")
 
         return self.jelly_cm
@@ -135,9 +131,7 @@ class JellyfinSource(MediaSource):
         if not item or not item.identifier:
             raise Unresolvable("No media identifier provided.")
 
-        media_content_type, media_content_id = self.parse_mediasource_identifier(
-            item.identifier
-        )
+        media_content_type, media_content_id = self.parse_mediasource_identifier(item.identifier)
         if not media_content_id:
             raise Unresolvable(f"Could not parse identifier {item.identifier}")
 
@@ -156,9 +150,7 @@ class JellyfinSource(MediaSource):
         if not manager:
             raise Unresolvable("Jellyfin integration is not configured.")
 
-        media_content_type, media_content_id = self.parse_mediasource_identifier(
-            item.identifier
-        )
+        media_content_type, media_content_id = self.parse_mediasource_identifier(item.identifier)
         return await async_library_items(
             manager, media_content_type, media_content_id, canPlayList=False
         )
@@ -229,13 +221,11 @@ async def async_library_items(
     canPlayList=True,
 ) -> BrowseMediaSource:
     """Create response payload describing contents of a library or collection."""
-    _LOGGER.debug(
-        "async_library_items: %s / %s", media_content_type_in, media_content_id_in
-    )
+    _LOGGER.debug("async_library_items: %s / %s", media_content_type_in, media_content_id_in)
 
     if media_content_id_in and IDENTIFIER_SPLIT in str(media_content_id_in):
-        media_content_type, media_content_id = (
-            JellyfinSource.parse_mediasource_identifier(media_content_id_in)
+        media_content_type, media_content_id = JellyfinSource.parse_mediasource_identifier(
+            media_content_id_in
         )
     else:
         media_content_type = media_content_type_in
@@ -272,14 +262,10 @@ async def async_library_items(
         }
         parent_item = await jelly_cm.get_item(media_content_id)
         parent_name = (
-            parent_item.get("Name", "Library")
-            if isinstance(parent_item, dict)
-            else "Library"
+            parent_item.get("Name", "Library") if isinstance(parent_item, dict) else "Library"
         )
         parent_type = (
-            parent_item.get("Type", "Folder")
-            if isinstance(parent_item, dict)
-            else "Folder"
+            parent_item.get("Type", "Folder") if isinstance(parent_item, dict) else "Folder"
         )
 
         library_info = BrowseMediaSource(

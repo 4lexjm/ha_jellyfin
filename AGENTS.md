@@ -199,8 +199,12 @@ Before submitting a change, verify:
 
 **Workflow**: `.github/workflows/validate.yaml`
 
-- **Triggers**: every push, every pull request, daily at midnight UTC
-- **Job**: HACS validation — checks that the integration meets HACS publishing requirements (manifest, domain, file structure, etc.)
+- **Triggers**: push on `main`, pull requests, daily schedule at midnight UTC, workflow dispatch
+- **Jobs**:
+  - `lint`: Code quality and formatting checks via Ruff (`ruff check` and `ruff format --check`)
+  - `test`: Automated test suite executed across Python 3.12 and Python 3.13 via pytest
+  - `hassfest`: Official Home Assistant validation for manifest, services, and translation schemas
+  - `hacs`: Official HACS validation for integration requirements and repository structure
 - **No build or deploy step**: users install directly via HACS from this repository.
 
 ---

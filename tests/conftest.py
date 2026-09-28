@@ -1,12 +1,13 @@
 """Mock Home Assistant modules and fixtures for testing."""
+
 from __future__ import annotations
 
 import asyncio
+import sys
 from datetime import datetime, timezone
 from enum import Enum, IntFlag
-import sys
 from types import ModuleType
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 
 def _setup_homeassistant_mock():
@@ -140,6 +141,7 @@ def _setup_homeassistant_mock():
             def decorator(cls):
                 self[domain] = cls
                 return cls
+
             return decorator
 
     ha_config_entries.ConfigEntry = ConfigEntry

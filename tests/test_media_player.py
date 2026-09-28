@@ -1,16 +1,18 @@
 """Unit tests for Jellyfin MediaPlayer entity."""
-import pytest
-from unittest.mock import MagicMock, AsyncMock
 
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from homeassistant.components.media_player.const import (
     MediaPlayerEntityFeature,
     MediaPlayerState,
     MediaType,
 )
+
 from custom_components.jellyfin_custom import JellyfinDevice
 from custom_components.jellyfin_custom.media_player import (
-    JellyfinMediaPlayer,
     SUPPORT_JELLYFIN,
+    JellyfinMediaPlayer,
 )
 
 
@@ -143,5 +145,7 @@ async def test_media_player_async_play_media(mock_device_and_manager):
     device.play_media.assert_awaited_with("item-12345")
 
     # Media Source URI
-    await player.async_play_media(MediaType.MOVIE, "media-source://jellyfin_custom/Movie~~item-67890")
+    await player.async_play_media(
+        MediaType.MOVIE, "media-source://jellyfin_custom/Movie~~item-67890"
+    )
     device.play_media.assert_awaited_with("item-67890")

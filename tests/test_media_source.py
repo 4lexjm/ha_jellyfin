@@ -1,32 +1,37 @@
 """Unit tests for Jellyfin Media Source."""
-import pytest
-from unittest.mock import MagicMock, AsyncMock
 
+from unittest.mock import AsyncMock, MagicMock
+
+import pytest
 from homeassistant.components.media_player.const import MediaClass, MediaType
-from homeassistant.components.media_source.models import MediaSourceItem
 from homeassistant.components.media_source.error import Unresolvable
+from homeassistant.components.media_source.models import MediaSourceItem
+
 from custom_components.jellyfin_custom.media_source import (
-    JellyfinSource,
-    Type2Mediatype,
-    Type2Mediaclass,
     IsPlayable,
-    async_library_items,
+    JellyfinSource,
+    Type2Mediaclass,
+    Type2Mediatype,
 )
 
 
 def test_parse_mediasource_identifier():
     """Test parsing media source identifiers."""
     # Full URI with domain prefix and type
-    assert JellyfinSource.parse_mediasource_identifier("media-source://jellyfin_custom/Movie~~item-123") == ("Movie", "item-123")
-    
+    assert JellyfinSource.parse_mediasource_identifier(
+        "media-source://jellyfin_custom/Movie~~item-123"
+    ) == ("Movie", "item-123")
+
     # Raw with split
     assert JellyfinSource.parse_mediasource_identifier("Episode~~ep-456") == ("Episode", "ep-456")
-    
+
     # Library root
-    assert JellyfinSource.parse_mediasource_identifier("media-source://jellyfin_custom/library") == (None, None)
+    assert JellyfinSource.parse_mediasource_identifier(
+        "media-source://jellyfin_custom/library"
+    ) == (None, None)
     assert JellyfinSource.parse_mediasource_identifier("") == (None, None)
     assert JellyfinSource.parse_mediasource_identifier(None) == (None, None)
-    
+
     # Single ID without split
     assert JellyfinSource.parse_mediasource_identifier("standalone-id") == (None, "standalone-id")
 
@@ -62,7 +67,9 @@ async def test_resolve_media():
     mock_hass = MagicMock()
     mock_manager = MagicMock()
     mock_manager.is_available = True
-    mock_manager.get_stream_url = AsyncMock(return_value=("http://jf.local/stream.mp4", "video/mp4", "1080p"))
+    mock_manager.get_stream_url = AsyncMock(
+        return_value=("http://jf.local/stream.mp4", "video/mp4", "1080p")
+    )
 
     source = JellyfinSource(mock_hass, mock_manager)
     item = MediaSourceItem("media-source://jellyfin_custom/Movie~~item-999")

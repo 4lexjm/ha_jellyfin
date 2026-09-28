@@ -1,42 +1,52 @@
 """Unit tests for Jellyfin integration core logic."""
+
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
-from unittest.mock import MagicMock, AsyncMock, patch
+from homeassistant.const import (
+    CONF_CLIENT_ID,
+    CONF_PASSWORD,
+    CONF_URL,
+    CONF_USERNAME,
+    CONF_VERIFY_SSL,
+)
 
 from custom_components.jellyfin_custom import (
     JellyfinClientManager,
     JellyfinDevice,
-    autolog,
 )
 from custom_components.jellyfin_custom.const import (
     STATE_PLAYING,
-    STATE_PAUSED,
-    STATE_IDLE,
-    STATE_OFF,
-    CONF_GENERATE_UPCOMING,
-    CONF_GENERATE_YAMC,
-)
-from homeassistant.const import (
-    CONF_URL,
-    CONF_USERNAME,
-    CONF_PASSWORD,
-    CONF_CLIENT_ID,
-    CONF_VERIFY_SSL,
 )
 
 
 def test_normalize_url():
     """Test URL normalization logic."""
     # Plain HTTP adds port 8096 if missing
-    assert JellyfinClientManager.normalize_url("http://192.168.1.100") == "http://192.168.1.100:8096"
-    assert JellyfinClientManager.normalize_url("http://192.168.1.100:8096/") == "http://192.168.1.100:8096"
+    assert (
+        JellyfinClientManager.normalize_url("http://192.168.1.100") == "http://192.168.1.100:8096"
+    )
+    assert (
+        JellyfinClientManager.normalize_url("http://192.168.1.100:8096/")
+        == "http://192.168.1.100:8096"
+    )
     assert JellyfinClientManager.normalize_url("192.168.1.100") == "http://192.168.1.100:8096"
-    
+
     # HTTPS preserves portless reverse-proxy
-    assert JellyfinClientManager.normalize_url("https://jellyfin.example.com") == "https://jellyfin.example.com"
-    assert JellyfinClientManager.normalize_url("https://jellyfin.example.com:8920/") == "https://jellyfin.example.com:8920"
-    
+    assert (
+        JellyfinClientManager.normalize_url("https://jellyfin.example.com")
+        == "https://jellyfin.example.com"
+    )
+    assert (
+        JellyfinClientManager.normalize_url("https://jellyfin.example.com:8920/")
+        == "https://jellyfin.example.com:8920"
+    )
+
     # Custom path preserved
-    assert JellyfinClientManager.normalize_url("http://localhost:8096/jellyfin/") == "http://localhost:8096/jellyfin"
+    assert (
+        JellyfinClientManager.normalize_url("http://localhost:8096/jellyfin/")
+        == "http://localhost:8096/jellyfin"
+    )
 
 
 def test_clean_none_dict_values():
@@ -62,12 +72,12 @@ def test_parse_and_format_date():
     assert JellyfinClientManager._parse_and_format_date(None) is None
     assert JellyfinClientManager._parse_and_format_date("") is None
     assert JellyfinClientManager._parse_and_format_date("not-a-date") is None
-    
+
     # Standard ISO string from Jellyfin
     iso_date = "2024-05-18T14:30:00.0000000Z"
     formatted = JellyfinClientManager._parse_and_format_date(iso_date, "%d/%m/%Y")
     assert formatted == "18/05/2024"
-    
+
     year_only = JellyfinClientManager._parse_and_format_date(iso_date, "%Y")
     assert year_only == "2024"
 
@@ -176,16 +186,14 @@ async def test_get_stream_url_jellyfin_12_compatibility():
                 "SupportsDirectStream": True,
                 "SupportsTranscoding": False,
                 "Bitrate": 10000000,
-                "MediaStreams": [
-                    {"Type": "Video", "Width": 1920, "Height": 1080, "Codec": "h264"}
-                ],
+                "MediaStreams": [{"Type": "Video", "Width": 1920, "Height": 1080, "Codec": "h264"}],
             }
         ]
     }
     manager.get_play_info = AsyncMock(return_value=playback_info)
 
     url, mimetype, info = await manager.get_stream_url("video-item-1", "Movie")
-    
+
     assert "ApiKey=token-xyz-12345" in url
     assert "api_key=token-xyz-12345" in url
     assert mimetype == "video/mp4"

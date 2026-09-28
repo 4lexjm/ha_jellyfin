@@ -1,22 +1,24 @@
 """Unit tests for Jellyfin Config Flow and Options Flow."""
-import pytest
+
 from unittest.mock import MagicMock, patch
 
-from custom_components.jellyfin_custom.config_flow import (
-    JellyfinFlowHandler,
-    JellyfinOptionsFlowHandler,
-    CannotConnect,
-    InvalidAuth,
-    RESULT_CONN_ERROR,
-    RESULT_AUTH_ERROR,
-)
+import pytest
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    CONF_PASSWORD,
     CONF_URL,
     CONF_USERNAME,
-    CONF_PASSWORD,
     CONF_VERIFY_SSL,
 )
-from homeassistant.config_entries import ConfigEntry
+
+from custom_components.jellyfin_custom.config_flow import (
+    RESULT_AUTH_ERROR,
+    RESULT_CONN_ERROR,
+    CannotConnect,
+    InvalidAuth,
+    JellyfinFlowHandler,
+    JellyfinOptionsFlowHandler,
+)
 
 
 @pytest.mark.asyncio
@@ -59,7 +61,9 @@ async def test_config_flow_cannot_connect():
         "generate_yamc": False,
     }
 
-    with patch("custom_components.jellyfin_custom.config_flow._validate_input", side_effect=CannotConnect):
+    with patch(
+        "custom_components.jellyfin_custom.config_flow._validate_input", side_effect=CannotConnect
+    ):
         result = await flow.async_step_user(user_input)
 
     assert result["type"] == "form"
@@ -81,7 +85,9 @@ async def test_config_flow_invalid_auth():
         "generate_yamc": False,
     }
 
-    with patch("custom_components.jellyfin_custom.config_flow._validate_input", side_effect=InvalidAuth):
+    with patch(
+        "custom_components.jellyfin_custom.config_flow._validate_input", side_effect=InvalidAuth
+    ):
         result = await flow.async_step_user(user_input)
 
     assert result["type"] == "form"
