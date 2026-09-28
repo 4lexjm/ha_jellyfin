@@ -1,5 +1,20 @@
 ## Changelog
 
+### 1.2.0
+
+- Jellyfin 12.0 / 12.1 compatibility: update authentication to use `ApiKey` parameter and headers (resolving 401 Unauthorized errors caused by deprecated legacy auth removal)
+- Update `jellyfin-apiclient-python` dependency to `>=1.19.0`
+- Fix critical latent bug: `JellyfinMediaPlayer` controls (`play`, `pause`, `stop`, `next_track`, `previous_track`, `seek`) raising `AttributeError`
+- Fix missing `supported_features` on `JellyfinMediaPlayer` (remote controls were hidden in Home Assistant)
+- Implement `async_play_media` on `JellyfinMediaPlayer` for cast and media browser playback
+- Fix `get_artwork` inverted argument bug and modernize image retrieval with async `aiohttp` client session
+- Modernize Home Assistant architecture: adopt `entry.runtime_data`, `MediaPlayerState`, and `SensorEntity`
+- Add connection and authentication validation in Config Flow and Options Flow
+- Make WebSocket dispatching thread-safe using `call_soon_threadsafe`
+- Prevent memory leaks by properly tracking and unsubscribing device update callbacks
+- Harden upcoming media and YAMC data processing against missing/null fields and format dates safely
+- Synchronize service schemas in `services.yaml` with integration handlers (add `search_term`, `yamc_setpage`, `yamc_setplaylist`)
+
 ### 1.1.2
 
 - Handle `ManualPlaylistsFolder` type

@@ -1,84 +1,120 @@
 trigger_scan:
-  # Description of the service
   name: Trigger library scan
-  description: "Trigger a scan on Jellyfin"
+  description: "Trigger a library scan on Jellyfin"
   fields:
     entity_id:
       name: Entity
       description: Jellyfin sensor entity.
       required: true
-      example: "sensor.jellyfin_cloud"
+      example: "sensor.jellyfin_server"
       selector:
         entity:
           integration: jellyfin_custom
           domain: sensor
 
 search:
-  # Description of the service
-  name: Browse to an item
-  description: "Search for items on a Jellyfin device"
+  name: Search library
+  description: "Search for items in the Jellyfin media library"
   fields:
     entity_id:
       name: Entity
       description: Jellyfin sensor entity.
       required: true
-      example: "sensor.jellyfin_cloud"
+      example: "sensor.jellyfin_server"
       selector:
         entity:
           integration: jellyfin_custom
           domain: sensor
-    id:
+    search_term:
       name: Search term
       description: Search terms to look for.
       required: true
-      example: "bourne"
+      example: "inception"
       selector:
         text:
 
-
 browse:
-  # Description of the service
-  name: Browse to an item
-  description: "Display an item info on a Jellyfin device"
+  name: Browse to item
+  description: "Display an item info on a Jellyfin client device"
   fields:
     entity_id:
       name: Entity
       description: Jellyfin media player entity.
       required: true
-      example: "media_player.jellyfin_firefox"
+      example: "media_player.jellyfin_living_room"
       selector:
         entity:
           integration: jellyfin_custom
           domain: media_player
     id:
-      name: Item Id
-      description: Id of the item to browse to.
+      name: Item ID
+      description: ID of the item to browse to.
       required: true
       example: "82f6bfdbdb610529c086b3e2bca71ad6"
       selector:
         text:
 
-          
 delete:
-  # Description of the service
-  name: Delete an item
+  name: Delete item
   description: "Delete an item from the Jellyfin library and filesystem"
   fields:
     entity_id:
       name: Entity
       description: Jellyfin sensor entity.
       required: true
-      example: "sensor.jellyfin_cloud"
+      example: "sensor.jellyfin_server"
       selector:
         entity:
           integration: jellyfin_custom
           domain: sensor
     id:
-      name: Item Id
-      description: Id of the item to browse to.
+      name: Item ID
+      description: ID of the item to delete.
       required: true
       example: "82f6bfdbdb610529c086b3e2bca71ad6"
       selector:
         text:
 
-          
+yamc_setpage:
+  name: Set YAMC page
+  description: "Set the active page for the YAMC upcoming media card"
+  fields:
+    entity_id:
+      name: Entity
+      description: Jellyfin sensor entity.
+      required: true
+      example: "sensor.jellyfin_server"
+      selector:
+        entity:
+          integration: jellyfin_custom
+          domain: sensor
+    page:
+      name: Page
+      description: The page number to navigate to (1-indexed).
+      required: true
+      example: 2
+      selector:
+        number:
+          min: 1
+          max: 50
+
+yamc_setplaylist:
+  name: Set YAMC playlist
+  description: "Set the active playlist for the YAMC upcoming media card"
+  fields:
+    entity_id:
+      name: Entity
+      description: Jellyfin sensor entity.
+      required: true
+      example: "sensor.jellyfin_server"
+      selector:
+        entity:
+          integration: jellyfin_custom
+          domain: sensor
+    playlist:
+      name: Playlist
+      description: Playlist name (e.g. latest_movies, latest_episodes, nextup).
+      required: true
+      example: "latest_movies"
+      selector:
+        text:

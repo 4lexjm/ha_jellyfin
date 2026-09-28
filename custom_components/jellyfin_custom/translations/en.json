@@ -6,6 +6,7 @@
         },
         "error": {
             "cannot_connect": "Unable to connect",
+            "invalid_auth": "Invalid username or password",
             "unknown": "Unknown Error"
         },
         "flow_title": "Jellyfin Custom Configuration",
@@ -31,6 +32,7 @@
         },
         "error": {
             "cannot_connect": "Unable to connect",
+            "invalid_auth": "Invalid username or password",
             "unknown": "Unknown Error"
         },
         "flow_title": "Jellyfin Custom Configuration",

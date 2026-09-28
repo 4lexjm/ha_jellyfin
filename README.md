@@ -113,6 +113,8 @@ Entity IDs may have changed. Verify and update:
 - `browse`: Show media info on a device
 - `delete`: Delete media
 - `search`: Search for media (for compatible frontends)
+- `yamc_setpage`: Navigate pages on YAMC card
+- `yamc_setplaylist`: Switch active playlist on YAMC card
 
 ### Upcoming Media Card
 

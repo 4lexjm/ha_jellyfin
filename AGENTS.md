@@ -12,7 +12,7 @@ It is a maintained fork of [koying/jellyfin_ha](https://github.com/koying/jellyf
 | Language | Python 3.x |
 | Framework | Home Assistant custom component |
 | HA config system | Config Flow (UI-based setup, no YAML required) |
-| Jellyfin client | `jellyfin-apiclient-python==1.7.2` |
+| Jellyfin client | `jellyfin-apiclient-python>=1.19.0` |
 | Distribution | HACS (Home Assistant Community Store) |
 | CI | GitHub Actions (HACS validation) |
 
@@ -150,6 +150,8 @@ Defined in `services.yaml` and registered in `__init__.py`:
 | `jellyfin_custom.browse` | Display media info on a device |
 | `jellyfin_custom.delete` | Delete a media item |
 | `jellyfin_custom.search` | Search for media (compatible frontends) |
+| `jellyfin_custom.yamc_setpage` | Set the active page for the YAMC upcoming media card |
+| `jellyfin_custom.yamc_setplaylist` | Set the active playlist for the YAMC upcoming media card |
 
 When adding a new service:
 1. Add the constant to `const.py`.
