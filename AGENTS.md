@@ -2,8 +2,8 @@
 
 ## Project Overview
 
-**jellyfin_ha** is a Home Assistant custom integration for [Jellyfin](https://jellyfin.org/), a free and open-source media server.
-It is a maintained fork of [koying/jellyfin_ha](https://github.com/koying/jellyfin_ha), published under [`4lexjm/jellyfin_ha`](https://github.com/4lexjm/jellyfin_ha), designed to resolve the name conflict with the official Jellyfin integration by using the domain `jellyfin_custom`.
+**ha_jellyfin** is a Home Assistant custom integration for [Jellyfin](https://jellyfin.org/), a free and open-source media server.
+It is a maintained fork of [koying/jellyfin_ha](https://github.com/koying/jellyfin_ha), published under [`4lexjm/ha_jellyfin`](https://github.com/4lexjm/ha_jellyfin), designed to resolve the name conflict with the official Jellyfin integration by using the domain `jellyfin_custom`.
 
 ### Key technologies
 
@@ -29,7 +29,7 @@ The HA domain name is `jellyfin_custom`. Only one instance of the integration ca
 ## Repository Structure
 
 ```
-jellyfin_ha/
+ha_jellyfin/
 ├── custom_components/
 │   └── jellyfin_custom/           # Integration source code
 │       ├── __init__.py     # Core logic: setup, coordinator, services, state management
@@ -70,8 +70,8 @@ This project has **no build step** and **no package manager**. It is pure Python
 
 ```bash
 # Clone the repository
-git clone https://github.com/4lexjm/jellyfin_ha.git
-cd jellyfin_ha
+git clone https://github.com/4lexjm/ha_jellyfin.git
+cd ha_jellyfin
 
 # (Optional) Create a virtual environment for tooling
 python -m venv .venv
@@ -79,7 +79,7 @@ python -m venv .venv
 # source .venv/bin/activate  # Linux/macOS
 
 # Install the Jellyfin API client (for IDE support / linting)
-pip install jellyfin-apiclient-python==1.7.2
+pip install "jellyfin-apiclient-python>=1.19.0"
 
 # Install Home Assistant as a library (for type checking and IDE support)
 pip install homeassistant
@@ -87,7 +87,7 @@ pip install homeassistant
 
 ### Deploying to a local Home Assistant instance
 
-1. Copy `custom_components/jellyfin/` into the `custom_components/` directory of your HA configuration folder.
+1. Copy `custom_components/jellyfin_custom/` into the `custom_components/` directory of your HA configuration folder.
 2. Restart Home Assistant.
 3. Go to **Settings → Devices & Services → Add Integration** and search for **Jellyfin**.
 
@@ -162,7 +162,13 @@ When adding a new service:
 
 ## Testing
 
-This project has **no automated test suite** at this time. The only automated check is HACS validation.
+The project includes an automated test suite with pytest.
+
+### Running unit tests
+
+```bash
+python3 -m pytest tests/ -v
+```
 
 ### Running CI validation locally
 
@@ -230,7 +236,7 @@ Add to your HA `configuration.yaml`:
 logger:
   default: warning
   logs:
-    custom_components.jellyfin: debug
+    custom_components.jellyfin_custom: debug
 ```
 
 ### Common issues

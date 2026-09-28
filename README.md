@@ -1,4 +1,4 @@
-# jellyfin_ha
+# ha_jellyfin
 
 Jellyfin integration for Home Assistant.
 
@@ -11,7 +11,7 @@ All thanks and rights go to the authors of the integration.
 - Go to HACS
 - Press the three dots in the upper right corner
 - Press Custom repositories
-- In the Repository field, enter `4lexjm/jellyfin_ha`
+- In the Repository field, enter `4lexjm/ha_jellyfin`
 - In the Category field, select `Integration`
 - Search for the added integration in HACS and install it
 - Configure your Jellyfin server
@@ -55,7 +55,7 @@ If not already done:
 
 1. In HACS, click the three dots `⋮` in the top right corner
 2. Select **Custom repositories**
-3. In the **Repository** field, enter: `4lexjm/jellyfin_ha`
+3. In the **Repository** field, enter: `4lexjm/ha_jellyfin`
 4. In the **Category** field, select: `Integration`
 5. Click **Add**
 
