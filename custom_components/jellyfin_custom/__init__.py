@@ -61,6 +61,7 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = [Platform.SENSOR, Platform.MEDIA_PLAYER]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=30)
 
 SERVICE_SCHEMA = vol.Schema({})

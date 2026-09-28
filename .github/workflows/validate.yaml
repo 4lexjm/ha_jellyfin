@@ -59,6 +59,8 @@ jobs:
           pip install pytest pytest-asyncio "jellyfin-apiclient-python>=1.19.0"
 
       - name: Run Pytest
+        env:
+          PYTHONPATH: .
         run: pytest tests/ -v
 
   hassfest:

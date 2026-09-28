@@ -157,8 +157,12 @@ def _setup_homeassistant_mock():
     def string(val):
         return str(val)
 
+    def config_entry_only_config_schema(domain):
+        return {}
+
     ha_helpers_cv.entity_id = entity_id
     ha_helpers_cv.string = string
+    ha_helpers_cv.config_entry_only_config_schema = config_entry_only_config_schema
 
     # aiohttp_client
     def async_get_clientsession(hass, verify_ssl=True):
