@@ -3,7 +3,7 @@
 ### 1.2.0
 
 - Jellyfin 12.0 / 12.1 compatibility: update authentication to use `ApiKey` parameter and headers (resolving 401 Unauthorized errors caused by deprecated legacy auth removal)
-- Update `jellyfin-apiclient-python` dependency to `>=1.19.0`
+- Update `jellyfin-apiclient-python` dependency to `>=1.16.0`
 - Fix critical latent bug: `JellyfinMediaPlayer` controls (`play`, `pause`, `stop`, `next_track`, `previous_track`, `seek`) raising `AttributeError`
 - Fix missing `supported_features` on `JellyfinMediaPlayer` (remote controls were hidden in Home Assistant)
 - Implement `async_play_media` on `JellyfinMediaPlayer` for cast and media browser playback

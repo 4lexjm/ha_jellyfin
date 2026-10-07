@@ -12,7 +12,7 @@ It is a maintained fork of [koying/jellyfin_ha](https://github.com/koying/jellyf
 | Language | Python 3.x |
 | Framework | Home Assistant custom component |
 | HA config system | Config Flow (UI-based setup, no YAML required) |
-| Jellyfin client | `jellyfin-apiclient-python>=1.19.0` |
+| Jellyfin client | `jellyfin-apiclient-python>=1.16.0` |
 | Distribution | HACS (Home Assistant Community Store) |
 | CI | GitHub Actions (HACS validation) |
 
@@ -79,7 +79,7 @@ python -m venv .venv
 # source .venv/bin/activate  # Linux/macOS
 
 # Install the Jellyfin API client (for IDE support / linting)
-pip install "jellyfin-apiclient-python>=1.19.0"
+pip install "jellyfin-apiclient-python>=1.16.0"
 
 # Install Home Assistant as a library (for type checking and IDE support)
 pip install homeassistant
