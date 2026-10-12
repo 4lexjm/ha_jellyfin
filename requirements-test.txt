@@ -1,0 +1,6 @@
+aiohttp
+jellyfin-apiclient-python>=1.16.0
+pytest
+pytest-asyncio
+ruff
+voluptuous

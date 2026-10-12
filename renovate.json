@@ -1,0 +1,39 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard",
+    ":semanticCommits"
+  ],
+  "labels": ["dependencies"],
+  "prConcurrentLimit": 3,
+  "prHourlyLimit": 2,
+  "minimumReleaseAge": "3 days",
+  "packageRules": [
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "description": "Auto-merge minor and patch updates for GitHub Actions after CI passes",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group Python test dependencies",
+      "matchManagers": ["pip_requirements"],
+      "groupName": "Python test dependencies",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "description": "Home Assistant integration manifest requirements",
+      "matchManagers": ["homeassistant-manifest"],
+      "groupName": "Home Assistant integration requirements",
+      "schedule": ["before 6am on monday"]
+    }
+  ]
+}
