@@ -11,6 +11,11 @@
   "minimumReleaseAge": "3 days",
   "packageRules": [
     {
+      "description": "Disable automatic python version bump from Renovate (handled by check-ha-python workflow)",
+      "matchPackageNames": ["python", "actions/python-versions"],
+      "enabled": false
+    },
+    {
       "description": "Group GitHub Actions updates",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions",

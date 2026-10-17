@@ -1,0 +1,155 @@
+name: Check Home Assistant Python Version
+
+on:
+  schedule:
+    # Runs on the 10th of every month at 04:00 UTC (shortly after monthly HA release)
+    - cron: "0 4 10 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check-and-update:
+    name: Check & Align Python Version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Check latest Home Assistant required Python
+        id: ha_python
+        run: |
+          python3 - << 'EOF'
+          import urllib.request, json, re, os
+
+          url = 'https://pypi.org/pypi/homeassistant/json'
+          req = urllib.request.urlopen(url)
+          data = json.loads(req.read().decode())
+
+          ha_version = data['info']['version']
+          requires_python = data['info']['requires_python']
+
+          match = re.search(r'(\d+)\.(\d+)', requires_python)
+          py_ver = f"{match.group(1)}.{match.group(2)}"
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write(f"ha_version={ha_version}\n")
+              f.write(f"py_version={py_ver}\n")
+              f.write(f"py_tag=py{match.group(1)}{match.group(2)}\n")
+          EOF
+
+      - name: Compare with current repository configuration
+        id: check_diff
+        run: |
+          TARGET_PY="${{ steps.ha_python.outputs.py_version }}"
+          CURRENT_PY=$(grep -oP 'python-version: "\K[0-9.]+' .github/workflows/validate.yaml | head -n1)
+
+          echo "Current Python in validate.yaml: $CURRENT_PY"
+          echo "Home Assistant requires: $TARGET_PY"
+
+          if [ "$CURRENT_PY" != "$TARGET_PY" ]; then
+            echo "needs_update=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_update=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up target Python version
+        if: steps.check_diff.outputs.needs_update == 'true'
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ steps.ha_python.outputs.py_version }}
+          cache: "pip"
+
+      - name: Apply updates to files
+        if: steps.check_diff.outputs.needs_update == 'true'
+        run: |
+          python3 - << 'EOF'
+          import os, re
+
+          py_ver = "${{ steps.ha_python.outputs.py_version }}"
+          py_tag = "${{ steps.ha_python.outputs.py_tag }}"
+
+          # 1. Update pyproject.toml
+          with open("pyproject.toml", "r") as f:
+              content = f.read()
+          new_content = re.sub(r'target-version\s*=\s*"py\d+"', f'target-version = "{py_tag}"', content)
+          with open("pyproject.toml", "w") as f:
+              f.write(new_content)
+
+          # 2. Update validate.yaml
+          with open(".github/workflows/validate.yaml", "r") as f:
+              lines = f.readlines()
+
+          new_lines = []
+          in_matrix = False
+          matrix_versions = []
+          for line in lines:
+              if "python-version:" in line and not in_matrix and "${{" not in line:
+                  line = re.sub(r'python-version:\s*"\d+\.\d+"', f'python-version: "{py_ver}"', line)
+              if "matrix:" in line:
+                  in_matrix = True
+              elif in_matrix:
+                  m = re.search(r'-\s*"(\d+\.\d+)"', line)
+                  if m:
+                      matrix_versions.append(m.group(1))
+                  elif line.strip() and not line.startswith(" ") and not line.startswith("\t"):
+                      in_matrix = False
+                  elif not line.strip().startswith("-") and "python-version:" not in line:
+                      in_matrix = False
+              new_lines.append(line)
+
+          if py_ver not in matrix_versions and matrix_versions:
+              out_lines = []
+              inserted = False
+              for line in new_lines:
+                  out_lines.append(line)
+                  if re.search(r'-\s*"' + re.escape(matrix_versions[-1]) + r'"', line) and not inserted:
+                      indent = re.match(r'(\s*)', line).group(1)
+                      out_lines.append(f'{indent}- "{py_ver}"\n')
+                      inserted = True
+              new_lines = out_lines
+
+          with open(".github/workflows/validate.yaml", "w") as f:
+              f.writelines(new_lines)
+          EOF
+
+      - name: Run verification tests
+        if: steps.check_diff.outputs.needs_update == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-test.txt
+          ruff check .
+          pytest tests/ -v
+
+      - name: Create or update Pull Request
+        if: steps.check_diff.outputs.needs_update == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HA_VER: ${{ steps.ha_python.outputs.ha_version }}
+          PY_VER: ${{ steps.ha_python.outputs.py_version }}
+        run: |
+          BRANCH_NAME="chore/bump-ha-python-$PY_VER"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH_NAME"
+          git add .github/workflows/validate.yaml pyproject.toml
+          git commit -m "ci: bump Python to $PY_VER (Home Assistant $HA_VER requirement)"
+          git push origin "$BRANCH_NAME" --force
+
+          if gh pr list --head "$BRANCH_NAME" --state open --json number --jq '.[0].number' | grep -q '^[0-9]'; then
+            echo "A PR already exists for $BRANCH_NAME, pushed updates to branch."
+          else
+            gh pr create \
+              --title "ci: align Python version to $PY_VER (Home Assistant $HA_VER)" \
+              --body "Automated monthly check: Home Assistant $HA_VER requires Python >= $PY_VER. Tests have been executed and passed." \
+              --base main \
+              --head "$BRANCH_NAME"
+          fi
