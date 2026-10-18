@@ -9,7 +9,6 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  workflows: write
 
 jobs:
   check-and-update:
@@ -144,16 +143,26 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git checkout -b "$BRANCH_NAME"
-          git add .github/workflows/validate.yaml pyproject.toml
+          git add pyproject.toml .github/workflows/validate.yaml
           git commit -m "ci: bump Python to $PY_VER (Home Assistant $HA_VER requirement)"
-          git push origin "$BRANCH_NAME" --force
+
+          WORKFLOW_NOTE=""
+          if ! git push origin "$BRANCH_NAME" --force; then
+            echo "Push with workflow update rejected by GitHub token permission. Retrying with pyproject.toml only..."
+            git reset HEAD~1
+            git checkout -- .github/workflows/validate.yaml
+            git add pyproject.toml
+            git commit -m "ci: bump Python to $PY_VER in pyproject.toml (Home Assistant $HA_VER requirement)"
+            git push origin "$BRANCH_NAME" --force
+            WORKFLOW_NOTE="<br><br>⚠️ **Note** : Le fichier \`.github/workflows/validate.yaml\` doit être ajusté manuellement pour inclure Python \`$PY_VER\` dans la matrice de test (la mise à jour automatique des workflows requiert un token avec le scope \`workflow\`)."
+          fi
 
           if gh pr list --head "$BRANCH_NAME" --state open --json number --jq '.[0].number' | grep -q '^[0-9]'; then
             echo "A PR already exists for $BRANCH_NAME, pushed updates to branch."
           else
             gh pr create \
               --title "ci: align Python version to $PY_VER (Home Assistant $HA_VER)" \
-              --body "Automated monthly check: Home Assistant $HA_VER requires Python >= $PY_VER. Tests have been executed and passed." \
+              --body "Automated monthly check: Home Assistant $HA_VER requires Python >= $PY_VER. Tests have been executed and passed.$WORKFLOW_NOTE" \
               --base main \
               --head "$BRANCH_NAME"
           fi
