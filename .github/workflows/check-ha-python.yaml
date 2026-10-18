@@ -69,12 +69,15 @@ jobs:
 
       - name: Apply updates to files
         if: steps.check_diff.outputs.needs_update == 'true'
+        env:
+          TARGET_PY: ${{ steps.ha_python.outputs.py_version }}
+          TARGET_TAG: ${{ steps.ha_python.outputs.py_tag }}
         run: |
           python3 - << 'EOF'
           import os, re
 
-          py_ver = "${{ steps.ha_python.outputs.py_version }}"
-          py_tag = "${{ steps.ha_python.outputs.py_tag }}"
+          py_ver = os.environ["TARGET_PY"]
+          py_tag = os.environ["TARGET_TAG"]
 
           # 1. Update pyproject.toml
           with open("pyproject.toml", "r") as f:
@@ -91,7 +94,7 @@ jobs:
           in_matrix = False
           matrix_versions = []
           for line in lines:
-              if "python-version:" in line and not in_matrix and "${{" not in line:
+              if "python-version:" in line and not in_matrix and "matrix." not in line:
                   line = re.sub(r'python-version:\s*"\d+\.\d+"', f'python-version: "{py_ver}"', line)
               if "matrix:" in line:
                   in_matrix = True
