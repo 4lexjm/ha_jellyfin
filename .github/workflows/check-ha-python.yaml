@@ -9,6 +9,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   check-and-update:
@@ -160,9 +161,14 @@ jobs:
           if gh pr list --head "$BRANCH_NAME" --state open --json number --jq '.[0].number' | grep -q '^[0-9]'; then
             echo "A PR already exists for $BRANCH_NAME, pushed updates to branch."
           else
-            gh pr create \
+            if ! gh pr create \
               --title "ci: align Python version to $PY_VER (Home Assistant $HA_VER)" \
               --body "Automated monthly check: Home Assistant $HA_VER requires Python >= $PY_VER. Tests have been executed and passed.$WORKFLOW_NOTE" \
               --base main \
-              --head "$BRANCH_NAME"
+              --head "$BRANCH_NAME"; then
+              echo "PR creation not allowed for Actions; creating tracking issue instead..."
+              gh issue create \
+                --title "ci: align Python version to $PY_VER (Home Assistant $HA_VER)" \
+                --body "Automated monthly check: Home Assistant $HA_VER requires Python >= $PY_VER.<br>Branch \`$BRANCH_NAME\` has been pushed and verified.$WORKFLOW_NOTE"
+            fi
           fi
