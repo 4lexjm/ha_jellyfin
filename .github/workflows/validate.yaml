@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           cache: "pip"
 
       - name: Install dependencies
@@ -43,6 +43,7 @@ jobs:
         python-version:
           - "3.12"
           - "3.13"
+          - "3.14"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
