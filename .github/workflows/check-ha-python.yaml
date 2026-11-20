@@ -80,14 +80,7 @@ jobs:
           py_ver = os.environ["TARGET_PY"]
           py_tag = os.environ["TARGET_TAG"]
 
-          # 1. Update pyproject.toml
-          with open("pyproject.toml", "r") as f:
-              content = f.read()
-          new_content = re.sub(r'target-version\s*=\s*"py\d+"', f'target-version = "{py_tag}"', content)
-          with open("pyproject.toml", "w") as f:
-              f.write(new_content)
-
-          # 2. Update validate.yaml
+          # 1. Update validate.yaml
           with open(".github/workflows/validate.yaml", "r") as f:
               lines = f.readlines()
 
@@ -119,9 +112,23 @@ jobs:
                       out_lines.append(f'{indent}- "{py_ver}"\n')
                       inserted = True
               new_lines = out_lines
+              matrix_versions.append(py_ver)
 
           with open(".github/workflows/validate.yaml", "w") as f:
               f.writelines(new_lines)
+
+          # 2. Align pyproject.toml Ruff target-version with the minimum supported Python in the test matrix
+          min_tag = py_tag
+          if matrix_versions:
+              min_ver = min(matrix_versions, key=lambda v: tuple(int(p) for p in v.split(".")))
+              min_major, min_minor = min_ver.split(".")
+              min_tag = f"py{min_major}{min_minor}"
+
+          with open("pyproject.toml", "r") as f:
+              content = f.read()
+          new_content = re.sub(r'target-version\s*=\s*"py\d+"', f'target-version = "{min_tag}"', content)
+          with open("pyproject.toml", "w") as f:
+              f.write(new_content)
           EOF
 
       - name: Run verification tests
@@ -130,6 +137,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-test.txt
           ruff check .
+          ruff format --check .
           pytest tests/ -v
 
       - name: Create or update Pull Request
